@@ -66,19 +66,19 @@ python3 main.py --setup
 ```
 
 This will initialize the ChromaDB collection with OpenAI embeddings.
-#### CLI Commands
+## CLI Commands
 
     /help: Show the help message with available commands.
     /exit: Exit the application.
     /sources: Show the sources of the last response generated.
 
-#### How it Works
+## How it Works
 
 - ChromaDB Setup: On running the script, it will either set up a new ChromaDB collection or connect to an existing one containing document embeddings.
 - Retriever-Augmented Generation (RAG): When a user enters a question, the system will retrieve relevant documents from ChromaDB, and use the retrieved context along with OpenAI's GPT model to generate an answer.
 - Response Generation: The generated response is displayed, and the sources (if any) are included at the end of the response.
 
-### 5. Example Usage
+## Example Usage
 
 ```bash
 ==============================================
