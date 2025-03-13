@@ -101,7 +101,7 @@ The capital of France is Paris.
 ==================================================
 ```
 
-#### Development
+## Development
 
 To contribute to this project, feel free to fork the repository, make changes, and create pull requests.
 License
@@ -109,7 +109,7 @@ License
 This project is licensed under the  GNU General Public License - see the LICENSE file for details.
 
 
-### Key Sections:
+## Key Sections:
 - **Overview**: Describes the functionality of the tool.
 - **Prerequisites**: Lists the required software and environment variables.
 - **Setup**: Guides the user through installing dependencies, setting environment variables, and running the application.
