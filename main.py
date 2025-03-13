@@ -66,8 +66,42 @@ def retrieve_context(query: str, collection, top_k: int = TOP_K) -> List[Dict[st
     
     return documents
 
-def generate_response(query: str, context_docs: List[Dict[str, Any]]) -> str:
-    """Generate a response using OpenAI's 4o-mini model with context."""
+def retrieve_context_multi(queries: List[str], collection, top_k: int = TOP_K) -> List[Dict[str, Any]]:
+    """Retrieve relevant documents for multiple queries and combine results."""
+    all_documents = []
+    seen_docs = set()  # To track unique documents
+    
+    for query in queries:
+        results = collection.query(
+            query_texts=[query],
+            n_results=top_k,
+            include=["documents", "metadatas", "distances"]
+        )
+        
+        if results and len(results["documents"]) > 0:
+            for i, doc in enumerate(results["documents"][0]):
+                metadata = results["metadatas"][0][i] if results["metadatas"] and i < len(results["metadatas"][0]) else {}
+                distance = results["distances"][0][i] if results["distances"] and i < len(results["distances"][0]) else 0.0
+                
+                # Create a unique identifier for the document
+                doc_id = str(doc) + str(metadata.get('source', ''))
+                
+                if doc_id not in seen_docs:
+                    seen_docs.add(doc_id)
+                    all_documents.append({
+                        "content": doc,
+                        "metadata": metadata,
+                        "distance": distance
+                    })
+    
+    # Sort by relevance (distance)
+    all_documents.sort(key=lambda x: x["distance"])
+    
+    # Limit to top_k most relevant documents
+    return all_documents[:top_k]
+
+def generate_response(query: str, context_docs: List[Dict[str, Any]], conversation_history: List[Dict[str, str]] = None) -> str:
+    """Generate a response using OpenAI's model with context and conversation history."""
     # Format the context
     context = ""
     sources = []
@@ -79,21 +113,26 @@ def generate_response(query: str, context_docs: List[Dict[str, Any]]) -> str:
     
     # Create the prompt
     system_prompt = (
-        "You are a helpful assistant that answers questions based on the provided context. "
+        "You are a helpful assistant that answers questions based on the provided context and conversation history. "
         "If the answer is not in the context, say you don't know and try to help the user in another way. "
         "Include citations to the relevant documents in your answer using [Doc X] notation."
     )
     
+    messages = [{"role": "system", "content": system_prompt}]
+    
+    # Add conversation history if available
+    if conversation_history and len(conversation_history) > 0:
+        messages.extend(conversation_history)
+    
+    # Add the current query with context
     user_prompt = f"Context:\n{context}\n\nQuestion: {query}"
+    messages.append({"role": "user", "content": user_prompt})
     
     # Generate the response
     try:
         response = client.chat.completions.create(
             model=MODEL_NAME,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ],
+            messages=messages,
             temperature=TEMPERATURE,
             max_tokens=MAX_TOKENS
         )
@@ -108,6 +147,49 @@ def generate_response(query: str, context_docs: List[Dict[str, Any]]) -> str:
     
     except Exception as e:
         return f"Error generating response: {str(e)}"
+
+def augment_query(query: str, num_questions: int = 3) -> List[str]:
+    """Generate multiple questions based on the original query."""
+    try:
+        response = client.chat.completions.create(
+            model=MODEL_NAME,
+            messages=[
+                {"role": "system", "content": 
+                 "Generate alternative versions of the user's question to improve information retrieval. "
+                 "Create varied questions that explore different aspects and phrasings of the original query. "
+                 "Return only the questions as a numbered list, without explanations or other text."},
+                {"role": "user", "content": f"Original question: {query}\n\nGenerate {num_questions} alternative questions:"}
+            ],
+            temperature=0.7,
+            max_tokens=1024
+        )
+        
+        response_text = response.choices[0].message.content
+        
+        # Parse the numbered list of questions
+        questions = []
+        for line in response_text.strip().split('\n'):
+            line = line.strip()
+            if line:
+                # Remove numbering like "1.", "2)", etc.
+                cleaned_line = ' '.join(line.split(' ')[1:]) if any(line.startswith(f"{i}{sep}") for i in range(1, 10) for sep in ['.', ')', ':', '-']) else line
+                questions.append(cleaned_line)
+        
+        # Add the original query to the list
+        questions.insert(0, query)
+        
+        # Remove duplicates while preserving order
+        unique_questions = []
+        for q in questions:
+            if q not in unique_questions:
+                unique_questions.append(q)
+        
+        return unique_questions
+        
+    except Exception as e:
+        print(f"Error augmenting query: {str(e)}")
+        # Return just the original query if there's an error
+        return [query]
 
 # CLI Interface
 def print_welcome():
@@ -157,6 +239,8 @@ def main():
     
     # Main chat loop
     last_sources = []
+    conversation_history = []  # Store the conversation history
+    
     while True:
         try:
             # Get user input
@@ -180,19 +264,45 @@ def main():
             elif not user_input.strip():
                 continue
             
+            # Add user message to history (without context)
+            conversation_history.append({"role": "user", "content": user_input})
+            
             # RAG process
-            print("\nSearching for relevant information...")
+            print("\nProcessing your question...")
             start_time = time.time()
             
-            # Retrieve context
-            context_docs = retrieve_context(user_input, collection)
+            # Augment the query
+            print("Generating related questions...")
+            augmented_queries = augment_query(user_input)
+            
+            print(f"Searching for relevant information using {len(augmented_queries)} queries...")
+            
+            # Retrieve context using multiple queries
+            context_docs = retrieve_context_multi(augmented_queries, collection)
             
             # Save sources
             last_sources = [doc["metadata"].get("source", "Unknown") for doc in context_docs if "source" in doc["metadata"]]
             
             # Generate response
             print("Generating answer...")
-            response = generate_response(user_input, context_docs)
+            
+            # Extract the last 5 exchanges (10 messages or fewer) for the history context
+            recent_history = conversation_history[-10:] if len(conversation_history) > 10 else conversation_history[:]
+            
+            # Generate response with history context but exclude current user message
+            response = generate_response(user_input, context_docs, recent_history[:-1])
+            
+            # Extract answer without sources for conversation history
+            answer_only = response
+            if "\n\nSources:" in response:
+                answer_only = response.split("\n\nSources:")[0]
+                
+            # Add assistant response to history
+            conversation_history.append({"role": "assistant", "content": answer_only})
+            
+            # Keep only the last 5 exchanges (10 messages) in history
+            if len(conversation_history) > 10:
+                conversation_history = conversation_history[-10:]
             
             # Print response
             elapsed_time = time.time() - start_time
