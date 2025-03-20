@@ -1,0 +1,261 @@
+{
+    "ICFO": {
+        "es": "Instituto de Ciencias Fotónicas",
+        "en": "Institute of Photonic Sciences",
+        "type": "organization"
+    },
+    "FIB": {
+        "es": "Facultat d'Informàtica de Barcelona",
+        "en": "Barcelona School of Informatics",
+        "type": "organization"
+    },
+    "UPC": {
+        "es": "Universitat Politècnica de Catalunya",
+        "en": "Polytechnic University of Catalonia",
+        "type": "organization"
+    },
+    "OW": {
+        "es": "Orientation Week",
+        "en": "Orientation Week",
+        "description": "Programa de 2 días que incluye bienvenida institucional, información sobre trámites y servicios universitarios",
+        "type": "program"
+    },
+    "TOEFL": {
+        "en": "Test of English as a Foreign Language",
+        "type": "certificate"
+    },
+    "IELTS": {
+        "en": "International English Language Testing System",
+        "type": "certificate"
+    },
+    "TOEIC": {
+        "en": "Test of English for International Communication",
+        "type": "certificate"
+    },
+    "FCE": {
+        "en": "First Certificate in English",
+        "type": "certificate"
+    },
+    "DAAD": {
+        "de": "Deutscher Akademischer Austauschdienst",
+        "en": "German Academic Exchange Service",
+        "type": "organization"
+    },
+    "Salsa'm": {
+        "description": "Programa de acogida (Buddy Programme) para estudiantes de intercambio en la UPC",
+        "type": "program"
+    },
+    "B1": {
+        "description": "Nivel intermedio de competencia lingüística según el Marco Común Europeo de Referencia para las lenguas",
+        "type": "certificate_level"
+    },
+    "Institut Ramon Llull": {
+        "ca": "Institut Ramon Llull",
+        "en": "Ramon Llull Institute",
+        "description": "Institución pública que promueve la lengua y la cultura catalana en el exterior",
+        "type": "organization"
+    },
+    "Biblioteca Gabriel Ferraté": {
+        "ca": "Biblioteca Gabriel Ferraté",
+        "en": "Gabriel Ferraté Library",
+        "description": "Biblioteca del Campus Nord de la UPC",
+        "type": "organization"
+    },
+    "GRIE": {
+        "es": "Gabinete de Relaciones Internacionales y Empresa",
+        "en": "International and Corporate Relations Bureau",
+        "type": "organization"
+    },
+    "Buddy Programme": {
+        "description": "Programa de mentoría entre estudiantes locales e internacionales",
+        "type": "program"
+    },
+    "Summer Fellows": {
+        "description": "Programa de becas de verano para proyectos de investigación",
+        "type": "program"
+    },
+    "Campus Nord": {
+        "description": "Campus principal de la UPC en Barcelona donde se encuentra la FIB",
+        "type": "location"
+    },
+    "Incoming": {
+        "description": "Estudiantes internacionales que vienen a estudiar a la universidad",
+        "type": "student_category"
+    },
+    "Partner Universities": {
+        "es": "Universidades partner",
+        "description": "Universidades con acuerdos bilaterales de intercambio",
+        "type": "concept"
+    },
+    "ECTS": {
+        "en": "European Credit Transfer and Accumulation System",
+        "description": "Sistema europeo de transferencia y acumulación de créditos académicos",
+        "type": "academic_concept"
+    },
+    "TFG": {
+        "es": "Trabajo Final de Grado",
+        "en": "Bachelor's Thesis",
+        "type": "academic_work"
+    },
+    "TFM": {
+        "es": "Trabajo Final de Máster",
+        "en": "Master's Thesis",
+        "type": "academic_work"
+    },
+    "CSIC": {
+        "es": "Consejo Superior de Investigaciones Científicas",
+        "en": "Spanish National Research Council",
+        "type": "organization"
+    },
+    "BSC": {
+        "en": "Barcelona Supercomputing Center",
+        "es": "Centro Nacional de Supercomputación",
+        "type": "organization"
+    },
+    "CIC": {
+        "ca": "Consell Interuniversitari de Catalunya",
+        "en": "Inter-University Council of Catalonia",
+        "type": "organization"
+    },
+    "PAU": {
+        "es": "Pruebas de Acceso a la Universidad",
+        "en": "University Entrance Exams",
+        "type": "exam"
+    },
+    "ERASMUS": {
+        "en": "European Region Action Scheme for the Mobility of University Students",
+        "description": "Programa de intercambio de estudiantes europeos",
+        "type": "program"
+    },
+    "GEI": {
+        "es": "Grado en Ingeniería Informática",
+        "en": "Bachelor's Degree in Informatics Engineering",
+        "type": "degree"
+    },
+    "MEI": {
+        "es": "Máster en Ingeniería Informática",
+        "en": "Master's Degree in Informatics Engineering",
+        "type": "degree"
+    },
+    "MIRI": {
+        "en": "Master in Innovation and Research in Informatics",
+        "type": "degree"
+    },
+    "MAI": {
+        "en": "Master in Artificial Intelligence",
+        "type": "degree"
+    },
+    "CIDUI": {
+        "ca": "Congrés Internacional de Docència Universitària i Innovació",
+        "type": "event"
+    },
+    "I+D+i": {
+        "es": "Investigación, Desarrollo e innovación",
+        "en": "R&D&I (Research, Development and Innovation)",
+        "type": "concept"
+    },
+    "CFIS": {
+        "ca": "Centre de Formació Interdisciplinària Superior",
+        "type": "organization"
+    },
+    "inLab": {
+        "description": "Laboratorio de innovación e investigación de la FIB",
+        "type": "organization"
+    },
+    "DAC": {
+        "es": "Departamento de Arquitectura de Computadores",
+        "type": "department"
+    },
+    "CS": {
+        "en": "Computer Science",
+        "es": "Ciencias de la Computación",
+        "type": "field"
+    },
+    "IoT": {
+        "en": "Internet of Things",
+        "es": "Internet de las Cosas",
+        "type": "concept"
+    },
+    "AI": {
+        "en": "Artificial Intelligence",
+        "es": "Inteligencia Artificial",
+        "type": "field"
+    },
+    "ML": {
+        "en": "Machine Learning",
+        "es": "Aprendizaje Automático",
+        "type": "field"
+    },
+    "HPC": {
+        "en": "High Performance Computing",
+        "es": "Computación de Alto Rendimiento",
+        "type": "field"
+    },
+    "GPGPU": {
+        "en": "General-Purpose Computing on Graphics Processing Units",
+        "type": "technology"
+    },
+    "RACO": {
+        "ca": "Repositori Acadèmic de la UPC",
+        "en": "UPC Academic Repository",
+        "type": "service"
+    },
+    "NIU": {
+        "ca": "Número d'Identificació Universitari",
+        "en": "University Identification Number",
+        "type": "concept"
+    },
+    "PAS": {
+        "es": "Personal de Administración y Servicios",
+        "en": "Administrative and Service Staff",
+        "type": "staff_category"
+    },
+    "PDI": {
+        "es": "Personal Docente e Investigador",
+        "en": "Teaching and Research Staff",
+        "type": "staff_category"
+    },
+    "EEES": {
+        "es": "Espacio Europeo de Educación Superior",
+        "en": "European Higher Education Area",
+        "type": "concept"
+    },
+    "CRM": {
+        "ca": "Centre de Recerca Matemàtica",
+        "en": "Centre for Mathematical Research",
+        "type": "organization"
+    },
+    "CIMNE": {
+        "en": "International Center for Numerical Methods in Engineering",
+        "type": "organization"
+    },
+    "ETSAB": {
+        "ca": "Escola Tècnica Superior d'Arquitectura de Barcelona",
+        "type": "school"
+    },
+    "ETSEIB": {
+        "ca": "Escola Tècnica Superior d'Enginyeria Industrial de Barcelona",
+        "type": "school"
+    },
+    "CTT": {
+        "ca": "Centre de Transferència de Tecnologia",
+        "en": "Technology Transfer Center",
+        "type": "organization"
+    },
+    "MOOC": {
+        "en": "Massive Open Online Course",
+        "type": "education_format"
+    },
+    "ISO": {
+        "en": "International Organization for Standardization",
+        "type": "organization"
+    },
+    "IEEE": {
+        "en": "Institute of Electrical and Electronics Engineers",
+        "type": "organization"
+    },
+    "ACM": {
+        "en": "Association for Computing Machinery",
+        "type": "organization"
+    }
+}
