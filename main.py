@@ -9,7 +9,12 @@ import openai
 from openai import OpenAI
 import textwrap
 import time
+import json  # Add this import
 from typing import List, Dict, Any, Optional
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 # Configuration
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
@@ -100,8 +105,10 @@ def retrieve_context_multi(queries: List[str], collection, top_k: int = TOP_K) -
     # Limit to top_k most relevant documents
     return all_documents[:top_k]
 
-def generate_response(query: str, context_docs: List[Dict[str, Any]], conversation_history: List[Dict[str, str]] = None) -> str:
-    """Generate a response using OpenAI's model with context and conversation history."""
+def generate_response(query: str, context_docs: List[Dict[str, Any]], 
+                      conversation_history: List[Dict[str, str]] = None,
+                      mentioned_concepts: Dict = None) -> str:
+    """Generate a response using OpenAI's model with context, conversation history, and concept info."""
     # Format the context
     context = ""
     sources = []
@@ -111,11 +118,22 @@ def generate_response(query: str, context_docs: List[Dict[str, Any]], conversati
         if 'source' in doc['metadata']:
             sources.append(f"[{i+1}] {doc['metadata']['source']}")
     
+    # Format concept information if available
+    concept_info = ""
+    if mentioned_concepts and len(mentioned_concepts) > 0:
+        concept_info = "Relevant concept information:\n"
+        for concept, details in mentioned_concepts.items():
+            concept_info += f"- {concept}: {json.dumps(details)}\n"
+    
     # Create the prompt
     system_prompt = (
-        "You are a helpful assistant that answers questions based on the provided context and conversation history. "
-        "If the answer is not in the context, say you don't know and try to help the user in another way. "
-        "Include citations to the relevant documents in your answer using [Doc X] notation."
+        "You are a helpful assistant that answers questions based on the provided context, conversation history, "
+        "and any relevant concept information. "
+        "If related documents were found in the knowledge base, use them as your primary source and cite them using [Doc X] notation. "
+        "If no relevant documents were found but concept information is available, use that to provide a helpful response "
+        "and clearly state that the answer is based on concept information, not document search results. "
+        "If neither documents nor concept information is available, respond based on your general knowledge "
+        "and clearly state that no specific information was found in the knowledge base."
     )
     
     messages = [{"role": "system", "content": system_prompt}]
@@ -124,8 +142,19 @@ def generate_response(query: str, context_docs: List[Dict[str, Any]], conversati
     if conversation_history and len(conversation_history) > 0:
         messages.extend(conversation_history)
     
-    # Add the current query with context
-    user_prompt = f"Context:\n{context}\n\nQuestion: {query}"
+    # Add the current query with context and concept info
+    has_vdb_results = len(context_docs) > 0
+    
+    user_prompt = f"Question: {query}\n\n"
+    
+    if has_vdb_results:
+        user_prompt += f"Context from knowledge base:\n{context}\n\n"
+    else:
+        user_prompt += "Note: No relevant documents were found in the knowledge base.\n\n"
+    
+    if concept_info:
+        user_prompt += f"{concept_info}\n"
+    
     messages.append({"role": "user", "content": user_prompt})
     
     # Generate the response
@@ -148,17 +177,51 @@ def generate_response(query: str, context_docs: List[Dict[str, Any]], conversati
     except Exception as e:
         return f"Error generating response: {str(e)}"
 
-def augment_query(query: str, num_questions: int = 3) -> List[str]:
-    """Generate multiple questions based on the original query."""
+def augment_query(query: str, num_questions: int = 3) -> tuple[List[str], dict]:
+    """
+    Generate multiple questions based on the original query.
+    Also enriches the query with relevant information from the FIB JSON file
+    if concepts are mentioned.
+    
+    Returns:
+        tuple: (list of questions, dictionary of mentioned concepts)
+    """
+    # First check if any concepts from the JSON file are mentioned in the query
+    mentioned_concepts = {}
     try:
+        # Load the JSON file with concepts
+        import json
+        with open("dictionary.json", "r") as f:
+            concepts_data = json.load(f)
+        
+        # Extract mentioned concepts
+        for concept, details in concepts_data.items():
+            if concept.lower() in query.lower():
+                mentioned_concepts[concept] = details
+            # Also check if the full name is mentioned
+            elif 'name' in details and details['name'].lower() in query.lower():
+                mentioned_concepts[concept] = details
+        
+        # Create concept enrichment text
+        concept_info = ""
+        if mentioned_concepts:
+            concept_info = "Additional context for mentioned concepts:\n"
+            for concept, details in mentioned_concepts.items():
+                concept_info += f"- {concept}: {json.dumps(details)}\n"
+        
+        # Generate alternative questions with concept enrichment
         response = client.chat.completions.create(
             model=MODEL_NAME,
             messages=[
                 {"role": "system", "content": 
                  "Generate alternative versions of the user's question to improve information retrieval. "
                  "Create varied questions that explore different aspects and phrasings of the original query. "
+                 "If concept information is provided, use it to create more specific and relevant questions. "
                  "Return only the questions as a numbered list, without explanations or other text."},
-                {"role": "user", "content": f"Original question: {query}\n\nGenerate {num_questions} alternative questions:"}
+                {"role": "user", "content": 
+                 f"Original question: {query}\n\n"
+                 f"{concept_info}\n\n"
+                 f"Generate {num_questions} alternative questions:"}
             ],
             temperature=0.7,
             max_tokens=1024
@@ -184,12 +247,12 @@ def augment_query(query: str, num_questions: int = 3) -> List[str]:
             if q not in unique_questions:
                 unique_questions.append(q)
         
-        return unique_questions
+        return unique_questions, mentioned_concepts
         
     except Exception as e:
         print(f"Error augmenting query: {str(e)}")
         # Return just the original query if there's an error
-        return [query]
+        return [query], mentioned_concepts
 
 # CLI Interface
 def print_welcome():
@@ -271,9 +334,9 @@ def main():
             print("\nProcessing your question...")
             start_time = time.time()
             
-            # Augment the query
+            # Augment the query and get concept information
             print("Generating related questions...")
-            augmented_queries = augment_query(user_input)
+            augmented_queries, mentioned_concepts = augment_query(user_input)
             
             print(f"Searching for relevant information using {len(augmented_queries)} queries...")
             
@@ -289,8 +352,13 @@ def main():
             # Extract the last 5 exchanges (10 messages or fewer) for the history context
             recent_history = conversation_history[-10:] if len(conversation_history) > 10 else conversation_history[:]
             
-            # Generate response with history context but exclude current user message
-            response = generate_response(user_input, context_docs, recent_history[:-1])
+            # Generate response with history context, VDB results, and concept information
+            response = generate_response(
+                user_input, 
+                context_docs, 
+                recent_history[:-1],
+                mentioned_concepts
+            )
             
             # Extract answer without sources for conversation history
             answer_only = response
