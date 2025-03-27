@@ -10,6 +10,7 @@ The **LLM Chat RAG** (Retriever-Augmented Generation) is a Command Line Interfac
 - **OpenAI GPT-4o-mini Model:** Uses OpenAI's GPT-4o-mini to generate answers based on the retrieved context.
 - **ChromaDB Integration:** Uses ChromaDB for efficient document retrieval and context management.
 - **Command-line interface:** Interact with the system through an intuitive CLI, allowing commands such as `/help`, `/exit`, and `/sources`.
+- **Web Interface:** Access the chatbot through a modern web interface using FastAPI.
 
 ## Prerequisites
 
@@ -49,6 +50,8 @@ set CHROMA_DB_PATH=.\chroma_db
 
 ### 3. Run the Application
 
+#### CLI Interface
+
 To start the CLI chatbot, run the following command:
 
 ```bash
@@ -56,6 +59,22 @@ python3 main.py
 ```
 
 You will be prompted to interact with the chatbot, ask questions, and receive answers based on documents stored in ChromaDB.
+
+#### Web Interface
+
+To start the web interface of the chatbot, run:
+
+```bash
+python3 web_app.py
+```
+
+This will start a FastAPI web server on port 4000. You can access the chatbot by opening a browser and navigating to:
+
+```
+http://localhost:4000
+```
+
+The web interface provides a user-friendly way to interact with the chatbot.
 
 ### 4. Setup ChromaDB (Optional)
 
