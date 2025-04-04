@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  # Servicio principal RAG
+  rag-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"  # Puerto para la aplicación web
+    volumes:
+      - ./data:/app/data
+      - ./chroma_db:/app/chroma_db
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - CHROMA_DB_PATH=/app/chroma_db
+      - ACRONYMS_FILE=/app/data/acronyms.json
+    command: python web_app.py
+    restart: unless-stopped
+    depends_on:
+      - ocr-service
+
+  # Servicio OCR
+  ocr-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.ocr
+    ports:
+      - "8000:8000"  # Puerto para el servicio FastAPI OCR
+    volumes:
+      - ./data:/app/data
+    command: uvicorn ocr_service:app --host 0.0.0.0 --port 8000
+    restart: unless-stopped

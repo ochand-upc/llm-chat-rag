@@ -1,137 +1,82 @@
-# LLM Chat RAG - CLI Interface
+# LLM Chat RAG con OCR
 
-## Overview
+Este proyecto implementa un sistema de chat con capacidades RAG (Retrieval Augmented Generation) y OCR (Optical Character Recognition) utilizando Docker Compose.
 
-The **LLM Chat RAG** (Retriever-Augmented Generation) is a Command Line Interface (CLI) tool that allows you to interact with documents stored in a ChromaDB database using OpenAI's GPT-4o-mini model. This system provides a way to query documents for relevant information, retrieve context, and generate AI-driven responses based on that context.
+## Componentes
 
-## Features
+- **RAG Service**: Servicio principal que maneja las consultas, búsqueda de contexto y generación de respuestas con LLM.
+- **OCR Service**: Servicio para extraer texto de documentos PDF mediante reconocimiento óptico de caracteres.
+- **Web App**: Interfaz web para interactuar con el chatbot.
 
-- **Retriever-Augmented Generation (RAG):** Retrieve context from a database and use it to generate more accurate and informative responses.
-- **OpenAI GPT-4o-mini Model:** Uses OpenAI's GPT-4o-mini to generate answers based on the retrieved context.
-- **ChromaDB Integration:** Uses ChromaDB for efficient document retrieval and context management.
-- **Command-line interface:** Interact with the system through an intuitive CLI, allowing commands such as `/help`, `/exit`, and `/sources`.
-- **Web Interface:** Access the chatbot through a modern web interface using FastAPI.
+## Requisitos
 
-## Prerequisites
+- Docker y Docker Compose
+- Clave API de OpenAI
 
-- **Python 3.x**: Ensure Python 3.6 or later is installed.
-- **OpenAI API Key**: You must have an OpenAI API key to use the GPT model.
-- **ChromaDB**: A local or cloud-based ChromaDB instance for document storage and retrieval.
+## Configuración
 
-## Setup
+1. Copia el archivo de ejemplo `.env.example` a `.env`:
+   ```bash
+   cp .env.example .env
+   ```
 
-### 1. Install Dependencies
+2. Edita el archivo `.env` y añade tu clave API de OpenAI:
+   ```
+   OPENAI_API_KEY=tu_clave_api_aquí
+   ```
 
-Install required dependencies via `pip`:
+3. Asegúrate de tener un directorio `data` con el archivo `acronyms.json` para la expansión de acrónimos (se crea automáticamente si no existe).
 
-```bash
-pip install -r requirements.txt
-```
-### 2. Set Environment Variables
+## Uso
 
-Set the following environment variables:
-``` bash
-OPENAI_API_KEY: Your OpenAI API key.
-CHROMA_DB_PATH: (Optional) Path to the ChromaDB persistent database (default is ./chroma_db).
-```
-For example, on Linux or macOS, you can set the environment variables like this:
+1. Inicia los servicios con Docker Compose:
+   ```bash
+   docker-compose up -d
+   ```
 
-```bash
-export OPENAI_API_KEY="your_openai_api_key"
-export CHROMA_DB_PATH="./chroma_db"
-```
+2. Accede a la aplicación web:
+   - Web App (Chatbot): http://localhost:4000
+   - Servicio OCR: http://localhost:8000/docs
 
-On Windows, use:
+3. Para detener los servicios:
+   ```bash
+   docker-compose down
+   ```
 
-```bash
-set OPENAI_API_KEY=your_openai_api_key
-set CHROMA_DB_PATH=.\chroma_db
-```
-
-### 3. Run the Application
-
-#### CLI Interface
-
-To start the CLI chatbot, run the following command:
-
-```bash
-python3 main.py
-```
-
-You will be prompted to interact with the chatbot, ask questions, and receive answers based on documents stored in ChromaDB.
-
-#### Web Interface
-
-To start the web interface of the chatbot, run:
-
-```bash
-python3 web_app.py
-```
-
-This will start a FastAPI web server on port 4000. You can access the chatbot by opening a browser and navigating to:
+## Estructura de directorios
 
 ```
-http://localhost:4000
+.
+├── data/                 # Directorio para archivos de datos (acrónimos, documentos)
+│   └── acronyms.json     # Diccionario de acrónimos
+├── chroma_db/            # Base de datos vectorial ChromaDB (se crea automáticamente)
+├── templates/            # Plantillas HTML para la web app
+│   └── index.html        # Interfaz de usuario del chatbot
+├── main.py               # Motor RAG principal
+├── ocr_service.py        # Servicio OCR
+├── web_app.py            # Aplicación web FastAPI
+├── docker-compose.yml    # Configuración de Docker Compose
+├── Dockerfile            # Dockerfile para el servicio RAG
+├── Dockerfile.ocr        # Dockerfile para el servicio OCR
+├── requirements.txt      # Dependencias de Python
+└── .env                  # Variables de entorno (no incluido en el repositorio)
 ```
 
-The web interface provides a user-friendly way to interact with the chatbot.
+## Endpoints API
 
-### 4. Setup ChromaDB (Optional)
+### Web App
+- `GET /`: Interfaz web del chatbot
+- `POST /chat`: Endpoint para enviar mensajes al chatbot
 
-If you need to set up the ChromaDB collection before starting the application, run:
+### OCR Service
+- `POST /extract-text/`: Endpoint para extraer texto de archivos PDF
 
-```bash
-python3 main.py --setup
-```
+## Personalización
 
-This will initialize the ChromaDB collection with OpenAI embeddings.
-## CLI Commands
+- Modifica `acronyms.json` para añadir más acrónimos específicos de tu dominio.
+- Ajusta las variables de entorno en `.env` según sea necesario.
 
-    /help: Show the help message with available commands.
-    /exit: Exit the application.
-    /sources: Show the sources of the last response generated.
+## Notas
 
-## How it Works
-
-- ChromaDB Setup: On running the script, it will either set up a new ChromaDB collection or connect to an existing one containing document embeddings.
-- Retriever-Augmented Generation (RAG): When a user enters a question, the system will retrieve relevant documents from ChromaDB, and use the retrieved context along with OpenAI's GPT model to generate an answer.
-- Response Generation: The generated response is displayed, and the sources (if any) are included at the end of the response.
-
-## Example Usage
-
-```bash
-==============================================
-        LLM Chat RAG - CLI Interface
-==============================================
-Type your questions and get answers from documents.
-Commands:
-  /help    - Show this help message
-  /exit    - Exit the application
-  /sources - Show sources for the last response
-==============================================
-
-> What is the capital of France?
-Searching for relevant information...
-Generating answer...
-
-Response (generated in 1.23s):
-==================================================
-The capital of France is Paris.
-==================================================
-```
-
-## Development
-
-To contribute to this project, feel free to fork the repository, make changes, and create pull requests.
-License
-
-This project is licensed under the  GNU General Public License - see the LICENSE file for details.
-
-
-## Key Sections:
-- **Overview**: Describes the functionality of the tool.
-- **Prerequisites**: Lists the required software and environment variables.
-- **Setup**: Guides the user through installing dependencies, setting environment variables, and running the application.
-- **CLI Commands**: Provides a list of available commands for interaction.
-- **How it Works**: Explains the core functionality of the app.
-- **Example Usage**: Shows an example of how to interact with the CLI.
+- El servicio OCR utiliza Tesseract con soporte para español (`spa`). Si necesitas otros idiomas, modifica los Dockerfiles.
+- Las respuestas del chatbot incluyen citas a las fuentes utilizadas para generar la respuesta.
