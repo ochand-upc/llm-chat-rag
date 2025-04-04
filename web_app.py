@@ -6,6 +6,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
+from typing import List, Dict, Optional
 import uvicorn
 import main as rag_engine
 
@@ -17,9 +18,10 @@ app = FastAPI(title="ISDM Chatbot")
 # Configurar templates
 templates = Jinja2Templates(directory="templates")
 
-# Modelo para la solicitud de chat
+# Modelo para la solicitud de chat, ahora incluye conversation_history
 class ChatRequest(BaseModel):
     message: str
+    conversation_history: Optional[List[Dict[str, str]]] = []
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
@@ -28,6 +30,7 @@ async def index(request: Request):
 @app.post("/chat")
 async def chat(chat_request: ChatRequest):
     query = chat_request.message
+    conv_history = chat_request.conversation_history  # Se obtiene el historial de conversación
     
     if not query:
         return JSONResponse(content={"response": "Por favor, escribe un mensaje."})
@@ -42,8 +45,8 @@ async def chat(chat_request: ChatRequest):
         # Recuperar contexto relevante
         context_docs = rag_engine.retrieve_context_multi(augmented_queries, collection)
         
-        # Generar respuesta
-        response = rag_engine.generate_response(query, context_docs)
+        # Generar respuesta, incluyendo el historial de conversación
+        response = rag_engine.generate_response(query, context_docs, conv_history)
         
         return {"response": response}
     except Exception as e:
@@ -56,4 +59,4 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Error al iniciar el servidor: {str(e)}")
         import traceback
-        traceback.print_exc() 
+        traceback.print_exc()
