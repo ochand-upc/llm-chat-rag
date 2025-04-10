@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ISDM Chatbot</title>
+    <title>DGSI Chatbot</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -54,10 +54,26 @@
             font-style: italic;
             color: #666;
         }
+        .tools-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 10px;
+        }
+        .tool-link {
+            padding: 8px 15px;
+            background-color: #555;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
-    <h1>ISDM Chatbot</h1>
+    <h1>DGSI Chatbot</h1>
+    <div class="tools-section">
+        <a href="/pdf-extractor" class="tool-link">Cargar PDF</a>
+    </div>
     <div class="chat-container" id="chatContainer">
         <div class="message bot-message">
             ¡Hola! Soy el chatbot de ISDM. ¿En qué puedo ayudarte hoy?

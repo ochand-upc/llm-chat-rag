@@ -25,8 +25,9 @@ COPY ocr_service.py .
 # Crear directorio para templates
 RUN mkdir -p templates
 
-# Copiar archivo de template
+# Copiar archivos de template
 COPY templates/index.html templates/
+COPY templates/pdf_extractor.html templates/
 
 # Crear directorio para datos si no existe
 RUN mkdir -p data
