@@ -11,6 +11,10 @@ services:
     volumes:
       - ./data:/app/data
       - ./chroma_db:/app/chroma_db
+      - ./main.py:/app/main.py
+      - ./web_app.py:/app/web_app.py
+      - ./ocr_service.py:/app/ocr_service.py
+      - ./templates:/app/templates
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - CHROMA_DB_PATH=/app/chroma_db
@@ -29,5 +33,6 @@ services:
       - "8000:8000"  # Puerto para el servicio FastAPI OCR
     volumes:
       - ./data:/app/data
-    command: uvicorn ocr_service:app --host 0.0.0.0 --port 8000
+      - ./ocr_service.py:/app/ocr_service.py
+    command: uvicorn ocr_service:app --host 0.0.0.0 --port 8000 --reload
     restart: unless-stopped

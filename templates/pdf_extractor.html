@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extractor de PDF - ISDM</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .result-container {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            height: 500px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            background-color: #f5f5f5;
+        }
+        .upload-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .back-button {
+            background-color: #555;
+            margin-bottom: 20px;
+        }
+        .loading {
+            text-align: center;
+            font-style: italic;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="button back-button">Volver al Chat</a>
+    <h1>Extractor de Texto de PDF</h1>
+    <div class="container">
+        <form id="pdfForm" class="upload-form">
+            <h2>Selecciona un archivo PDF para extraer su texto</h2>
+            <input type="file" id="pdfFile" accept=".pdf" required>
+            <button type="submit" class="button">Extraer Texto</button>
+        </form>
+    </div>
+    
+    <div id="loadingIndicator" class="loading" style="display: none;">
+        Procesando el PDF, por favor espere... Esta operación puede tardar varios minutos dependiendo del tamaño del documento.
+    </div>
+    
+    <div id="resultContainer" class="result-container" style="display: none;">
+        <h2>Texto Extraído</h2>
+        <div id="extractedText"></div>
+    </div>
+
+    <script>
+        const pdfForm = document.getElementById('pdfForm');
+        const pdfFile = document.getElementById('pdfFile');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const resultContainer = document.getElementById('resultContainer');
+        const extractedText = document.getElementById('extractedText');
+
+        pdfForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!pdfFile.files[0]) {
+                alert('Por favor selecciona un archivo PDF');
+                return;
+            }
+            
+            // Mostrar indicador de carga
+            loadingIndicator.style.display = 'block';
+            resultContainer.style.display = 'none';
+            
+            const formData = new FormData();
+            formData.append('file', pdfFile.files[0]);
+            
+            try {
+                const response = await fetch('/extract-text/', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                // Ocultar indicador de carga
+                loadingIndicator.style.display = 'none';
+                
+                if (data.status === 'success') {
+                    // Mostrar el resultado
+                    resultContainer.style.display = 'block';
+                    
+                    // Convertir markdown simple a HTML
+                    let htmlContent = data.markdown_text
+                        .replace(/\n/g, '<br>')
+                        .replace(/## (.*?)$/gm, '<h3>$1</h3>')
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\*(.*?)\*/g, '<em>$1</em>');
+                    
+                    extractedText.innerHTML = htmlContent;
+                } else {
+                    // Mostrar error
+                    resultContainer.style.display = 'block';
+                    extractedText.innerHTML = `<p class="error">Error al procesar el PDF: ${data.error || 'Error desconocido'}</p>`;
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                loadingIndicator.style.display = 'none';
+                resultContainer.style.display = 'block';
+                extractedText.innerHTML = '<p class="error">Lo siento, ha ocurrido un error al procesar tu solicitud.</p>';
+            }
+        });
+    </script>
+</body>
+</html> 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import os
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, UploadFile, File
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from typing import List, Dict, Optional
 import uvicorn
 import main as rag_engine
+from ocr_service import extract_text_from_pdf_bytes
 
 # Asegurarnos de que existe el directorio para las plantillas
 os.makedirs("templates", exist_ok=True)
@@ -26,6 +27,23 @@ class ChatRequest(BaseModel):
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
+
+@app.get("/pdf-extractor", response_class=HTMLResponse)
+async def pdf_extractor(request: Request):
+    return templates.TemplateResponse("pdf_extractor.html", {"request": request})
+
+@app.post("/extract-text/")
+async def extract_text_endpoint(file: UploadFile = File(...)):
+    # Leer el archivo PDF
+    pdf_content = await file.read()
+    
+    # Extraer texto usando la función de OCR
+    result = extract_text_from_pdf_bytes(pdf_content)
+    
+    # Añadir el nombre del archivo a los metadatos
+    result["filename"] = file.filename
+    
+    return result
 
 @app.post("/chat")
 async def chat(chat_request: ChatRequest):
